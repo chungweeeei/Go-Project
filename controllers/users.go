@@ -9,6 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type UserInfo struct {
+	Email     string `json:"email";bind:"required"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	CreatedAt string `json:"created_at"`
+}
+
 func GetUsers(context *gin.Context) {
 	var users []models.User
 	result := database.DB.Find(&users)
