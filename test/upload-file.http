@@ -1,0 +1,10 @@
+POST http://localhost:3000/v1/files/upload
+Content-Type: application/octet-stream
+Content-Length: 11
+X-fileId: a1e355077e9a4482bc8c2bb6ff58e5f2
+X-filename: hello.txt
+X-startByte: 0
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NDg5MzcyMzR9.b35o2h0VgBa-1diY1KNTPmvB5KHMYOAhDXuHfLTKhz4
+
+Hello World
+
