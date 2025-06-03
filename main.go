@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"example.com/restful-server/database"
+	"example.com/restful-server/routes"
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	fmt.Println("Start simple restful server")
+
+	database.InitDB() // initialize database connection
+
+	// create a gin default server instance
+	server := gin.Default()
+
+	routes.RegisterRoutes(server)
+
+	// select listening port for gin server
+	server.Run(":3000")
 }
