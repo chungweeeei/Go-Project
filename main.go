@@ -13,6 +13,7 @@ func main() {
 	// create a gin default server instance
 	server := gin.Default()
 
+	// http server register routes
 	routes.RegisterRoutes(server)
 
 	// select listening port for gin server

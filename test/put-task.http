@@ -1,0 +1,12 @@
+PUT http://localhost:3000/v1/tasks/1
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NDkwMzY5Mjh9.g5IhX2QnCez-HtseTdrq7MaYwcF-TQ4zsWogCMVg79U
+
+{
+  "title": "Test Task",
+  "description": "This is a test task created via HTTP request.",
+  "status": "in-progress",
+  "priority": "medium",
+  "category": "general",
+  "dueDate": "2025-12-31T23:59:59Z"
+}

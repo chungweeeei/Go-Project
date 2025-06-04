@@ -1,13 +1,21 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"example.com/restful-server/database"
 	"example.com/restful-server/models"
 	"example.com/restful-server/utils"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+type RegisterUserRequest struct {
+	Email    string `json:"email";binding:"required,email"`
+	Username string `json:"username";binding:"required"`
+	Password string `json:"password";binding:"required"`
+}
 
 func Signup(context *gin.Context) {
 	var userReq RegisterUserRequest
@@ -44,6 +52,35 @@ func Signup(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": "Successfully sign-up a new user."})
 }
 
+type LoginUserRequest struct {
+	Email    string `json:"email";binding:"required,email"`
+	Password string `json:"password";binding:"required"`
+}
+
+func (loginUser *LoginUserRequest) ValidateCredentials() error {
+
+	var user models.User
+	result := database.DB.Where("email = ?", loginUser.Email).First(&user)
+
+	// Check for record not found error
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return errors.New("Could not find user.")
+	}
+
+	// Check other database errors
+	if result.Error != nil {
+		return errors.New("Unexpected error occurred while fetching user.")
+	}
+
+	passwordIsValid := utils.CheckPasswordHash(loginUser.Password, user.Password)
+
+	if !passwordIsValid {
+		return errors.New("Credentials invalid")
+	}
+
+	return nil
+}
+
 func Login(context *gin.Context) {
 	var loginUser LoginUserRequest
 	err := context.ShouldBindJSON(&loginUser)
@@ -69,5 +106,5 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "Login successfully.", "token": token})
+	context.JSON(http.StatusOK, gin.H{"message": "Login successfully.", "email": loginUser.Email, "token": token})
 }

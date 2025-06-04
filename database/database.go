@@ -13,9 +13,9 @@ var DB *gorm.DB
 
 func InitDB() {
 
-	createDatabaseIfNotExists("go_test_db")
+	createDatabaseIfNotExists("go_db")
 
-	dsn := "host=localhost user=root password=root dbname=go_test_db port=5432 sslmode=disable TimeZone=Asia/Taipei"
+	dsn := "host=localhost user=root password=root dbname=go_db port=5432 sslmode=disable TimeZone=Asia/Taipei"
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
@@ -24,7 +24,7 @@ func InitDB() {
 	}
 
 	// Do migrate tables
-	err = DB.AutoMigrate((&models.User{}))
+	err = DB.AutoMigrate(&models.User{}, &models.Task{})
 	if err != nil {
 		panic("Could not auto migrate User model")
 	}
