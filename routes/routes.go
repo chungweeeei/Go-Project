@@ -20,17 +20,17 @@ func RegisterRoutes(server *gin.Engine) {
 	apiV1 := server.Group("/v1")
 	apiV1.Use(middleware.Authenticate)
 	{
-		users := apiV1.Group("/users")
+		tasks := apiV1.Group("/tasks")
 		{
-			users.GET("/", controllers.GetUsers)
-		}
-		files := apiV1.Group("/files")
-		{
-			files.POST("/upload", controllers.Upload)
+			tasks.POST("", controllers.CreateTask)
+			tasks.GET("", controllers.GetTasks)
+			tasks.GET("/:id", controllers.GetTaskByID)
+			tasks.PUT("/:id", controllers.UpdateTask)
+			tasks.DELETE("/:id", controllers.DeleteTask)
 		}
 	}
 
 	// sign-up / login
-	server.POST("/v1/signup", controllers.Signup)
-	server.POST("/v1/login", controllers.Login)
+	server.POST("/v1/auth/register", controllers.Signup)
+	server.POST("/v1/auth/login", controllers.Login)
 }

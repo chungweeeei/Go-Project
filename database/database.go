@@ -24,7 +24,7 @@ func InitDB() {
 	}
 
 	// Do migrate tables
-	err = DB.AutoMigrate((&models.User{}))
+	err = DB.AutoMigrate(&models.User{}, &models.Task{})
 	if err != nil {
 		panic("Could not auto migrate User model")
 	}
