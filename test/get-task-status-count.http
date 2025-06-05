@@ -1,0 +1,3 @@
+GET http://localhost:3000/v1/tasks/status-counts
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NDkxMTYyODh9.LCh1Q7Iqqfof4RZwYV12qjRx2spu0j5Cgr9evCcEZqg

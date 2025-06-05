@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -70,12 +69,22 @@ func GetTasks(context *gin.Context) {
 		return
 	}
 
+	statusStr := context.Query("status")
+
 	var tasks []models.Task
 	userEmail := context.GetString("userEmail")
 
+	// Build base query
+	query := database.DB.Model(&models.Task{}).Where("user_email = ?", userEmail)
+
+	// Apply status filter if provided
+	if statusStr != "" {
+		query = query.Where("status = ?", statusStr)
+	}
+
 	// Get total count of tasks for pagination
 	var totalRecords int64
-	database.DB.Model(&models.Task{}).Where("user_email = ?", userEmail).Count(&totalRecords)
+	query.Model(&models.Task{}).Count(&totalRecords)
 
 	// Calculate total pages
 	size := 5
@@ -90,8 +99,14 @@ func GetTasks(context *gin.Context) {
 	}
 
 	// Fetch tasks with pagination
-	result := database.DB.Where("user_email = ?", userEmail).
-		Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&tasks)
+	order := context.Query("order")
+	if order == "" {
+		order = "due_date DESC" // Default order by due date descending
+	} else {
+		order = "due_date " + order // Use the provided order
+	}
+
+	result := query.Offset((page - 1) * size).Limit(size).Order(order).Find(&tasks)
 
 	// Fetch tasks depending on the user email and pagination parameters
 	// result := database.DB.Where("user_email = ?", userEmail).Find(&tasks)
@@ -156,8 +171,6 @@ func GetTaskStatusCounts(context *gin.Context) {
 			statusMap[status] = 0
 		}
 	}
-
-	fmt.Println(statusMap)
 
 	context.JSON(http.StatusOK, gin.H{
 		"message":       "Fetched task status counts successfully",
