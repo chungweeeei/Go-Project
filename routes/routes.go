@@ -24,6 +24,7 @@ func RegisterRoutes(server *gin.Engine) {
 		{
 			tasks.POST("", controllers.CreateTask)
 			tasks.GET("", controllers.GetTasks)
+			tasks.GET("/status-counts", controllers.GetTaskStatusCounts)
 			tasks.GET("/:id", controllers.GetTaskByID)
 			tasks.PUT("/:id", controllers.UpdateTask)
 			tasks.DELETE("/:id", controllers.DeleteTask)

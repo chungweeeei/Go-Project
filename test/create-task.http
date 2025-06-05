@@ -1,12 +1,12 @@
 POST http://localhost:3000/v1/tasks
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NDkwMzY5Mjh9.g5IhX2QnCez-HtseTdrq7MaYwcF-TQ4zsWogCMVg79U
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NDkwOTc3Mzl9.aBYLSscVVN5FcmOrZhc7NJE81u1VpYrKdaru3ZMRL4k
 
 {
-  "title": "Test Task2",
-  "description": "This is a test task 2 created via HTTP request.",
-  "status": "todo",
-  "priority": "medium",
+  "title": "Test Task12",
+  "description": "This is a test task 12 created via HTTP request.",
+  "status": "Todo",
+  "priority": "Medium",
   "category": "general",
   "dueDate": "2025-12-31T23:59:59Z"
 }

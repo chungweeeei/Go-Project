@@ -16,6 +16,10 @@ func main() {
 	// http server register routes
 	routes.RegisterRoutes(server)
 
-	// select listening port for gin server
+	// // register publish job
+	// job := jobs.NewPublishJob("Hello, Go!")
+	// go job.Process()
+
+	// // select listening port for gin server
 	server.Run(":3000")
 }

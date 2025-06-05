@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"example.com/restful-server/database"
 	"example.com/restful-server/helper"
@@ -16,6 +18,11 @@ type taskRequest struct {
 	Priority    string `json:"priority";binding:"required"`
 	Category    string `json:"category"`
 	DueDate     string `json:"dueDate";binding:"required"` // Expecting date in YYYY-MM-DD format
+}
+
+type taskStatusCount struct {
+	Status string `json:"status"`
+	Count  int64  `json:"count"`
 }
 
 func CreateTask(context *gin.Context) {
@@ -39,6 +46,7 @@ func CreateTask(context *gin.Context) {
 		DueDate:     helper.FromISO(req.DueDate), // Convert string to time.Time
 	}
 
+	// Create task via orm engine
 	result := database.DB.Create(&newTask)
 
 	if result.Error != nil {
@@ -51,17 +59,55 @@ func CreateTask(context *gin.Context) {
 
 func GetTasks(context *gin.Context) {
 
+	// Check query string for filtering
+	var pageStr string = context.Query("page")
+	if pageStr == "" {
+		pageStr = "1" // Default to page 1 if not provided
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Invalid page parameter"})
+		return
+	}
+
 	var tasks []models.Task
 	userEmail := context.GetString("userEmail")
 
-	// Fetch tasks for the user
-	result := database.DB.Where("user_email = ?", userEmail).Find(&tasks)
+	// Get total count of tasks for pagination
+	var totalRecords int64
+	database.DB.Model(&models.Task{}).Where("user_email = ?", userEmail).Count(&totalRecords)
+
+	// Calculate total pages
+	size := 5
+	totalPages := int((totalRecords + int64(size) - 1) / int64(size)) // Ceiling division
+	if totalPages == 0 {
+		totalPages = 1 // At least 1 page even if no records
+	}
+
+	if page > totalPages {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Page number exceeds total pages"})
+		return
+	}
+
+	// Fetch tasks with pagination
+	result := database.DB.Where("user_email = ?", userEmail).
+		Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&tasks)
+
+	// Fetch tasks depending on the user email and pagination parameters
+	// result := database.DB.Where("user_email = ?", userEmail).Find(&tasks)
 	if result.Error != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch tasks"})
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "Fetched tasks successfully", "tasks": tasks})
+	context.JSON(http.StatusOK, gin.H{
+		"message": "Fetched tasks successfully",
+		"tasks":   tasks,
+		"total":   totalRecords,
+		"page":    page,
+		"size":    size,
+		"pages":   totalPages,
+	})
 }
 
 func GetTaskByID(context *gin.Context) {
@@ -76,6 +122,48 @@ func GetTaskByID(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, gin.H{"message": "Fetched task successfully", "task": task})
+}
+
+func GetTaskStatusCounts(context *gin.Context) {
+	userEmail := context.GetString("userEmail")
+
+	var statusCounts []taskStatusCount
+	// Query to get count of tasks grouped by status
+	result := database.DB.Model(&models.Task{}).
+		Select("status, COUNT(*) as count").
+		Where("user_email = ?", userEmail).
+		Group("status").
+		Scan(&statusCounts)
+
+	if result.Error != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch task status counts"})
+		return
+	}
+
+	// Create a map for easier frontend consumption
+	statusMap := make(map[string]int64)
+	var totalTasks int64 = 0
+
+	for _, sc := range statusCounts {
+		statusMap[sc.Status] = sc.Count
+		totalTasks += sc.Count
+	}
+
+	// Ensure all possible statuses are included (even if count is 0)
+	possibleStatuses := []string{"Todo", "In Progress", "Done"}
+	for _, status := range possibleStatuses {
+		if _, exists := statusMap[status]; !exists {
+			statusMap[status] = 0
+		}
+	}
+
+	fmt.Println(statusMap)
+
+	context.JSON(http.StatusOK, gin.H{
+		"message":       "Fetched task status counts successfully",
+		"total_tasks":   totalTasks,
+		"status_counts": statusMap,
+	})
 }
 
 func UpdateTask(context *gin.Context) {
